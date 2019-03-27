@@ -151,7 +151,6 @@ BroadcastReceiver receiver = new BroadcastReceiver() {
 ```
 
 **Ciclo de vida de la actividad y el servicio**
-
 El siguiente bloque de código sirve para establecer la comunicación
 con el servicio de BLE
 En *gattIntentFilter()* se agregan las respuestas que se esperan en el BroadcastReceiver
@@ -200,7 +199,6 @@ protected void onCreate(Bundle savedInstanceState) {
 ```
 
 **Paso 2: Obtener Barcode**
-
 El siguiente bloque de código se agrega en el onCreate y sirve para obtener el
 barcode del QR leído y verificar el Bluetooth encendido.
 ```
@@ -219,8 +217,89 @@ if(dataBarcode.hasExtra(EXTRA_BARCODE_DATA)){
 
 }
 ```
+**Paso 3 y 4: Establecer conexión**
+Si se puede inicializar una conexión (paso 3) se realiza la conexión (paso 4)
+```
+if(miPot.miPotInitializeConnection()){
+  miPot.miPotConnect(barcode);
+}
+```
+
+**Paso 5: Solicitar id MiPOT para validación**
+Se debe solicitar el id de MiPOT para verificar que el dispositivo
+sea autentico
+```
+if(!miPot.miPotGetAuthData()){
+  // Si entra aquí se muestra un mensaje de error
+}
+```
+
+**Paso 6: Recibiendo la respuesta del id**
+En el switch del BroadcastReceiver caerá la respuesta de MiPOT
+al haber solicitado el id. Se tiene un tipo de dato HashMap<String,String>
+```
+case BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA:
+```
+
+**Paso 7: Verificando cadena con id en el servidor**
+Una vez que se tiene la cadena, se debe enviar una solicitud al servidor
+de AtomicThings para verificar MiPOT
+#POST
+- header ->  Content-Type:application/x-www-form-urlencoded
+- body   ->  message: Hashmap en formato JSON (new JSONObject(map))
+
+**Paso 8: El resultado de la petición POST**
+Este paso consiste en solo tener control del resultado de la petición.
+La respuesta tiene el siguiente formato:
+*{message:cadenaCifrada}*
+Se tomará la cadena cifrada y entrará como parámetro en la siguiente función
 
 
+**Paso 9: Regresando respuesta a MiPOT**
+Para seguir con el proceso se requiere mandar la información a MiPOT
+Esto se hace con miPotValidation
+```
+if(!miPot.miPotValidation(cadenaCifrada)){
+  // Si entra aquí se muestra un mensaje de error
+}
+```
+
+**Paso 10: Validando MiPOT**
+MiPOT se puede desconectar. Algunas razones son:
+- El dispositivo MiPOT fue alterado o es un clon del original
+- Hemos detectado comportamiento extraño y se tomó la decisión de bloquearlo
+Se manda un código de error a
+```
+case BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE:
+```
+para conocer el estado del sistema.
+
+
+**Paso 11 y 12**
+Estos pasos corresponden a la petición de tu Wallet para hacer un intento de cobro
+El paso 12 corresponde a la obtención del resultado listo para mandarlo a MiPOT
+
+
+**Paso 13: MiPOT muestra el resultado**
+Para envíar resultado a MiPOT es necesario usar
+```
+if(!miPot.miPotSendData(true,monto)){
+  // Si entra aquí se muestra un mensaje de error (No fue posible mandar mensaje)
+}
+```
+donde el primer parámetro consiste en el estado de la transacción y el segundo en
+el monto. El primer parámetro es un boolean y el segundo un String
+
+**MiPOT enciende en este paso**
+
+
+**Paso 14: Fin de la comunicación**
+Se puede obtener un último mensaje en
+```
+case BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA
+```
+que sirve para conocer, si es que hubo algún error, la razón por la cual
+MiPOT no lograra encender. 
 
 
 ## Built With
