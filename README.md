@@ -3,7 +3,9 @@
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
-### Actualiaciones !!!
+### Actualiaciones !!! ![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")
+
+
 
 Desde la primera versión de SDK (0.1) solo se ha realizado una actualización que
  corresponde a la 0.3.
