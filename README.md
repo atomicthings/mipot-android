@@ -1,9 +1,10 @@
 # SDK para MiPOT (Actualización 06/05/19)
-## Versión actual: 0.3
+# Versión actual: 0.3
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
-### Actualiaciones !!! ![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")
+## Actualiaciones !!!
 
 
 
@@ -88,7 +89,7 @@ El SDK se hace cargo de los permisos de cámara.
 El código anterior abrirá la cámara y buscará un QR de MiPOT.
 
 
-**Cambio en la nueva versión  1/4 (Parte 1)**
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión  1/4 (Parte 1)**
 * El objeto obtenido en el QR pasó a tipo String (antes barcode)
 
 
@@ -136,7 +137,7 @@ ServiceConnection serviceConnection = new ServiceConnection() {
 };
 ```
 
-**Cambio en la nueva versión 2/4**
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 2/4**
 * Se renombraron variables para facilitar su uso
 * Se solucionó el problema de las variables cruzadas en la versión 0.1  
 
@@ -177,7 +178,7 @@ BroadcastReceiver receiver = new BroadcastReceiver() {
 };
 ```
 
-**Cambio en la nueva versión 3/4**
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 3/4**
 * Se renombraron variables para facilitar su uso
 * Se solucionó el problema de las variables cruzadas en la versión 0.1  
 
@@ -282,7 +283,7 @@ de AtomicThings para verificar MiPOT
 
 
 
-**Cambio en la nueva versión 4/4**
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 4/4**
 *  Mejoras en seguridad
 
 
