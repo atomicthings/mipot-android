@@ -12,7 +12,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -35,14 +34,14 @@ import atomic.things.mipot.ble.BLEService;
 
 public class BLEActivity extends AppCompatActivity implements View.OnClickListener {
 
-
     private Intent dataBarcode;
     private String barcode;
     private TextView lastData;
     private static int BLUETOOTH_REQUEST = 200;
     private BLEService miPot;
     private HashMap<String,String> currentHash;
-    private String url = "https://api.atomicthings.com/api/sdk/potVerify";
+    private String url = "SOLICITE A ATOMIC THINGS";
+    private String message,token;
 
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -63,21 +62,26 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
             String action = intent.getAction();
             currentHash = (HashMap<String, String>) intent.getSerializableExtra(BLEService.EXTRA_DATA);
             switch (action != null ? action : ""){
-                case BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA:
+                case BLEService.ACTION_VERIFICATION_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Toast.makeText(getApplicationContext(),"miPotGetAuthData",Toast.LENGTH_SHORT).show();
                     break;
-                case BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA:
+                case BLEService.ACTION_WALLET_MIPOT_SEND_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Toast.makeText(getApplicationContext(),"miPotSendData",Toast.LENGTH_SHORT).show();
                     break;
-                case BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE:
+                case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Toast.makeText(getApplicationContext(),"miPotValidation",Toast.LENGTH_SHORT).show();
                     break;
                 case BLEService.ACTION_GATT_CONNECTED:
                     break;
                 case BLEService.ACTION_GATT_DISCONNECTED:
                     Toast.makeText(getApplicationContext(),"No conectado",Toast.LENGTH_SHORT).show();
+                    finish();
                     break;
                 case BLEService.ACTION_GATT_SERVICES_DISCOVERED:
+                    // En esta parte
                     Toast.makeText(getApplicationContext(),"Listo para interactuar",Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -178,13 +182,15 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.buttonVerifyResponseMiPOT:
                 Toast.makeText(getApplicationContext(),"Response MiPOT",Toast.LENGTH_SHORT).show();
-                if(!miPot.miPotValidation(lastData.getText().toString())){
+
+                if(!miPot.miPotValidation(message,token)){
                     Toast.makeText(getApplicationContext(),"No fue posible escribir 2",Toast.LENGTH_SHORT).show();
                 }
+
                 break;
             case R.id.buttonSendAmount:
                 Toast.makeText(getApplicationContext(),"Send Data to MiPOT",Toast.LENGTH_SHORT).show();
-                if(!miPot.miPotSendData(true,"30.00")){
+                if(!miPot.miPotSendData(true,"100.99")){
                     Toast.makeText(getApplicationContext(),"No fue posible escribir 3",Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -196,12 +202,27 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                 request = new JsonObjectRequest(Request.Method.POST, url,new JSONObject(currentHash), new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            lastData.setText(response.getString("message"));
-                            Log.e("Entra al POST","YEY");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        lastData.setText(response.toString());
+
+                        if(response.has("message")){
+                            try {
+                                message = response.getString("message");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                message = "";
+                            }
                         }
+
+                        if(response.has("token")){
+                            try {
+                                token = response.getString("token");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                token = "";
+                            }
+                        }
+
+
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -209,11 +230,12 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                         if(error.networkResponse != null && error.networkResponse.data != null){
                             String dataError = new String(error.networkResponse.data);
                             VolleyError volleyError = new VolleyError(dataError);
-                            Log.e("Error en POST","AUCH " + volleyError );
+                            volleyError.getMessage();
                         }
-                        Log.e("Error en POST","AUCH" );
+
                     }
                 });
+
                 queue.add(request);
                 break;
         }
@@ -224,9 +246,9 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
         intentFilter.addAction(BLEService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BLEService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA);
-        intentFilter.addAction(BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE);
-        intentFilter.addAction(BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA);
+        intentFilter.addAction(BLEService.ACTION_VERIFICATION_DATA);
+        intentFilter.addAction(BLEService.ACTION_WALLET_MIPOT_SEND_DATA);
+        intentFilter.addAction(BLEService.ACTION_WALLET_DEVICE_VERIFICATION);
         return intentFilter;
     }
 }

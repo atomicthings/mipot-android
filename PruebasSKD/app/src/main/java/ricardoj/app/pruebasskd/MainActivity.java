@@ -1,8 +1,6 @@
 package ricardoj.app.pruebasskd;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,7 +9,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.barcode.Barcode;
 
 import atomic.things.mipot.barcode.MiPOTCameraActivity;
 
@@ -44,9 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
         //Toast.makeText(getApplicationContext(),"Request: " + requestCode + " Result: " + resultCode,Toast.LENGTH_SHORT).show();
         if(requestCode == 100 && data != null){
-            Barcode barcode = data.getParcelableExtra(MiPOTCameraActivity.BARCODE_OBJECT);
+            String barcode = data.getStringExtra(MiPOTCameraActivity.BARCODE_OBJECT);
             Intent intent = new Intent(getApplicationContext(),BLEActivity.class);
-            intent.putExtra("BARCODE",barcode.displayValue);
+            Toast.makeText(getApplicationContext(),"BARCODE: " + barcode,Toast.LENGTH_SHORT).show();
+            intent.putExtra("BARCODE",barcode);
             startActivity(intent);
         }
     }

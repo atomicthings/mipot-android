@@ -1,9 +1,22 @@
-# SDK para MiPOT
+# SDK para MiPOT (Actualización 06/05/19) Versión actual: 0.3
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
+### Actualiaciones !!!
 
-## Guía de inicio
+Desde la primera versión de SDK (0.1) solo se ha realizado una actualización que
+ corresponde a la 0.3.
+Estos son los puntos correspondientes:
+
+* Se renombraron variables para facilitar su uso  **Requiere cambios**
+* Se solucionó el problema de las variables cruzadas en la versión 0.1  **Requiere cambios**
+* El objeto obtenido en el QR pasó a tipo String (antes barcode) **Requiere cambios**
+* Mejoras en seguridad **Requiere cambios**
+
+
+Estos cambios aplican para la versión del firmware de MiPOT (v0.96R)
+
+### Guía de inicio
 
 Para instalar solo necesitas descargar el archivo .aar
 
@@ -54,7 +67,7 @@ Lo primero es agregar los permisos necesarios al archivo manifest
 Para hacer peticiones al API de MiPOT
 
 
-## Lector QR
+## Lector QR  
 
 **Paso 1: Leer QR**
 Para abrir el escaner con la acción de un botón se tiene lo siguiente:
@@ -71,15 +84,22 @@ button.setOnClickListener(new View.OnClickListener() {
 El SDK se hace cargo de los permisos de cámara.
 El código anterior abrirá la cámara y buscará un QR de MiPOT.
 
+
+**Cambio en la nueva versión  1/4 (Parte 1)**
+* El objeto obtenido en el QR pasó a tipo String (antes barcode)
+
+
 La respuesta se obtiene en onActivityResult
 ```
 if(requestCode == ESCANER_REQUEST_MIPOT && data != null){
-  Barcode barcode = data.getParcelableExtra(MiPOTCameraActivity.BARCODE_OBJECT);
+  String barcode = data.getStringExtra(MiPOTCameraActivity.BARCODE_OBJECT);
   Intent intent = new Intent(getApplicationContext(),BLEActivity.class);
-  intent.putExtra(EXTRA_BARCODE_DATA,barcode.displayValue);
+  intent.putExtra(EXTRA_BARCODE_DATA,barcode);
   startActivity(intent);
 }
 ```
+
+
 Donde BLEActivity es una actividad que manipulará los servicios de Bluetooth
 y mostrará información relevante de MiPOT
 
@@ -113,6 +133,10 @@ ServiceConnection serviceConnection = new ServiceConnection() {
 };
 ```
 
+**Cambio en la nueva versión 2/4**
+* Se renombraron variables para facilitar su uso
+* Se solucionó el problema de las variables cruzadas en la versión 0.1  
+
 BroadcastReceiver
 Es una instancia importante que consiste en el manejo de los mensajes de MiPOT.
 Aquí se encontraran los mensajes que envíe MiPOT a la aplicación dependiendo
@@ -124,13 +148,13 @@ BroadcastReceiver receiver = new BroadcastReceiver() {
     String action = intent.getAction();
     HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(BLEService.EXTRA_DATA);
     switch (action != null ? action : ""){
-      case BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA:
+      case BLEService.ACTION_VERIFICATION_DATA:
           // Aqui va la respuesta de miPotGetAuthData
       break;
-      case BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE:
+      case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
           // Aqui va la respuesta de miPotValidation
       break;
-      case BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA:
+      case BLEService.ACTION_WALLET_MIPOT_SEND_DATA:
           // Aqui va la respuesta de miPotSendData
       break;
       case BLEService.ACTION_GATT_CONNECTED:
@@ -149,6 +173,11 @@ BroadcastReceiver receiver = new BroadcastReceiver() {
   }
 };
 ```
+
+**Cambio en la nueva versión 3/4**
+* Se renombraron variables para facilitar su uso
+* Se solucionó el problema de las variables cruzadas en la versión 0.1  
+
 
 **Ciclo de vida de la actividad y el servicio**
 El siguiente bloque de código sirve para establecer la comunicación
@@ -190,13 +219,14 @@ protected void onCreate(Bundle savedInstanceState) {
     intentFilter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
     intentFilter.addAction(BLEService.ACTION_GATT_SERVICES_DISCOVERED);
 
-    intentFilter.addAction(BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA);
-    intentFilter.addAction(BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE);
-    intentFilter.addAction(BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA);
+    intentFilter.addAction(BLEService.ACTION_VERIFICATION_DATA);
+    intentFilter.addAction(BLEService.ACTION_WALLET_MIPOT_SEND_DATA);
+    intentFilter.addAction(BLEService.ACTION_WALLET_DEVICE_VERIFICATION);
     return intentFilter;
 }
 
 ```
+
 
 **Paso 2: Obtener Barcode**
 El siguiente bloque de código se agrega en el onCreate y sirve para obtener el
@@ -212,9 +242,8 @@ if(dataBarcode.hasExtra(EXTRA_BARCODE_DATA)){
   if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
     startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), BLUETOOTH_REQUEST);
   }else{
-    barcode = dataBarcode.getStringExtra("BARCODE");
+    barcode = dataBarcode.getStringExtra(EXTRA_BARCODE_DATA);
   }
-
 }
 ```
 **Paso 3 y 4: Establecer conexión**
@@ -238,7 +267,7 @@ if(!miPot.miPotGetAuthData()){
 En el switch del BroadcastReceiver caerá la respuesta de MiPOT
 al haber solicitado el id. Se tiene un tipo de dato HashMap<String,String>
 ```
-case BLEService.ACTION_MIPOT_RECEIVING_VERIFICATION_DATA:
+case BLEService.ACTION_VERIFICATION_DATA:
 ```
 
 **Paso 7: Verificando cadena con id en el servidor**
@@ -248,18 +277,26 @@ de AtomicThings para verificar MiPOT
 - header ->  Content-Type:application/x-www-form-urlencoded
 - body   ->  message: Hashmap en formato JSON (new JSONObject(map))
 
+
+
+**Cambio en la nueva versión 4/4**
+*  Mejoras en seguridad
+
+
 **Paso 8: El resultado de la petición POST**
 Este paso consiste en solo tener control del resultado de la petición.
 La respuesta tiene el siguiente formato:
-*{message:cadenaCifrada}*
-Se tomará la cadena cifrada y entrará como parámetro en la siguiente función
+*{message:cadenaCifrada, token:tokenDeCifrado}*
+
+Se debe de obtener la cadenaCifrada y el token para agregar como parámetros al
+método miPotValidation(cadenaCifrada,tokenDeCifrado)
 
 
 **Paso 9: Regresando respuesta a MiPOT**
 Para seguir con el proceso se requiere mandar la información a MiPOT
 Esto se hace con miPotValidation
 ```
-if(!miPot.miPotValidation(cadenaCifrada)){
+if(!miPot.miPotValidation(cadenaCifrada,tokenDeCifrado)){
   // Si entra aquí se muestra un mensaje de error
 }
 ```
@@ -270,7 +307,7 @@ MiPOT se puede desconectar. Algunas razones son:
 - Hemos detectado comportamiento extraño y se tomó la decisión de bloquearlo
 Se manda un código de error a
 ```
-case BLEService.ACTION_MIPOT_WALLET_RECEIVING_VERIFICATION_DATA_FROM_DEVICE:
+case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
 ```
 para conocer el estado del sistema.
 
@@ -296,10 +333,10 @@ el monto. El primer parámetro es un boolean y el segundo un String
 **Paso 14: Fin de la comunicación**
 Se puede obtener un último mensaje en
 ```
-case BLEService.ACTION_MIPOT_WALLET_RESULT_OF_SENDING_AMOUNT_DATA
+case BLEService.ACTION_WALLET_MIPOT_SEND_DATA
 ```
 que sirve para conocer, si es que hubo algún error, la razón por la cual
-MiPOT no lograra encender. 
+MiPOT no lograra encender.
 
 
 ## Built With
@@ -317,7 +354,6 @@ Usamos [SemVer](http://semver.org/) para determinar una versión.
 ## Autores
 
 * **RicardoJC**  [Richardo](https://github.com/RicardoJC)
-
 
 ## Licencia
 
