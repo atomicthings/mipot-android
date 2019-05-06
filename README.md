@@ -1,4 +1,5 @@
-# SDK para MiPOT (Actualización 06/05/19) Versión actual: 0.3
+# SDK para MiPOT (Actualización 06/05/19)
+# Versión actual: 0.3
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
