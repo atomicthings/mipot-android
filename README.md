@@ -18,7 +18,7 @@ Estos son los puntos correspondientes:
 * Mejoras en seguridad **Requiere cambios**
 
 
-Estos cambios aplican para la versión del firmware de MiPOT (v0.96R)
+Estos cambios aplican para la versión del firmware de MiPOT (v0.96L)
 
 ### Guía de inicio
 
