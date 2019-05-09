@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -40,7 +41,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
     private static int BLUETOOTH_REQUEST = 200;
     private BLEService miPot;
     private HashMap<String,String> currentHash;
-    private String url = "SOLICITE A ATOMIC THINGS";
+    private String url = "CONTACTAR A ATOMIC THINGS";
     private String message,token;
 
     ServiceConnection serviceConnection = new ServiceConnection() {
@@ -61,6 +62,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             currentHash = (HashMap<String, String>) intent.getSerializableExtra(BLEService.EXTRA_DATA);
+
             switch (action != null ? action : ""){
                 case BLEService.ACTION_VERIFICATION_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
@@ -190,7 +192,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.buttonSendAmount:
                 Toast.makeText(getApplicationContext(),"Send Data to MiPOT",Toast.LENGTH_SHORT).show();
-                if(!miPot.miPotSendData(true,"100.99")){
+                if(!miPot.miPotSendData(true,"100000.99")){
                     Toast.makeText(getApplicationContext(),"No fue posible escribir 3",Toast.LENGTH_SHORT).show();
                 }
                 break;
