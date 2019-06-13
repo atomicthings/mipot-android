@@ -13,11 +13,14 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -29,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import atomic.things.mipot.ble.BLEService;
@@ -41,7 +45,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
     private static int BLUETOOTH_REQUEST = 200;
     private BLEService miPot;
     private HashMap<String,String> currentHash;
-    private String url = "CONTACTAR A ATOMIC THINGS";
+    private String url = "";
     private String message,token;
 
     ServiceConnection serviceConnection = new ServiceConnection() {
@@ -66,6 +70,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
             switch (action != null ? action : ""){
                 case BLEService.ACTION_VERIFICATION_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Log.e("INFO:",currentHash.toString());
                     Toast.makeText(getApplicationContext(),"miPotGetAuthData",Toast.LENGTH_SHORT).show();
                     break;
                 case BLEService.ACTION_WALLET_MIPOT_SEND_DATA:
@@ -236,7 +241,18 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                         }
 
                     }
-                });
+                }){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<>();
+                        String credentials = ":" ;
+                        String auth = "Basic "
+                                + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+                        headers.put("Content-Type", "application/json");
+                        headers.put("Authorization", auth);
+                        return headers;
+                    }
+                };
 
                 queue.add(request);
                 break;

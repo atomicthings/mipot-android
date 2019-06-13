@@ -3,6 +3,20 @@
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
+
+## MiPOT ya cuenta con Basic Auth
+
+ENDPOINT: Solicitar por correo a ricardo@atomicthings.com
+
+Agregar header "Authentication" en la petición
+y como valor el base64 de "Basic packageName:KEY"
+
+Donde:
+* packageName es el nombre del paquete de la aplicación
+* KEY es una cadena suministrada por Atomic Things
+
+
+
 ![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")
 ## Actualiaciones !!!
 
