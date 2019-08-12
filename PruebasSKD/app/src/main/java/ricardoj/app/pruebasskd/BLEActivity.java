@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -52,10 +53,12 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             miPot = ((BLEService.LocalBinder) iBinder).getService();
+            Log.i("SDK_WALLET","Servicio conectado");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
+            Log.i("SDK_WALLET","Servicio desconectado");
             miPot = null;
         }
     };
@@ -67,29 +70,41 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
             String action = intent.getAction();
             currentHash = (HashMap<String, String>) intent.getSerializableExtra(BLEService.EXTRA_DATA);
 
+
+
+            if(currentHash != null)
+                Log.i("SDK_WALLET","Contenido del map:" + currentHash.toString());
+
             switch (action != null ? action : ""){
                 case BLEService.ACTION_VERIFICATION_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
-                    Log.e("INFO:",currentHash.toString());
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_VERIFICATION_DATA);
                     Toast.makeText(getApplicationContext(),"miPotGetAuthData",Toast.LENGTH_SHORT).show();
                     break;
                 case BLEService.ACTION_WALLET_MIPOT_SEND_DATA:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_WALLET_MIPOT_SEND_DATA);
+                    Log.i("SDK_WALLET","" + currentHash.toString());
                     Toast.makeText(getApplicationContext(),"miPotSendData",Toast.LENGTH_SHORT).show();
                     break;
                 case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
                     lastData.setText(currentHash.toString().length() !=0 ? currentHash.toString():"Vacio");
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_WALLET_DEVICE_VERIFICATION);
                     Toast.makeText(getApplicationContext(),"miPotValidation",Toast.LENGTH_SHORT).show();
                     break;
                 case BLEService.ACTION_GATT_CONNECTED:
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_GATT_CONNECTED);
                     break;
                 case BLEService.ACTION_GATT_DISCONNECTED:
                     Toast.makeText(getApplicationContext(),"No conectado",Toast.LENGTH_SHORT).show();
-                    finish();
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_GATT_DISCONNECTED);
+                    //finish();
                     break;
                 case BLEService.ACTION_GATT_SERVICES_DISCOVERED:
                     // En esta parte
                     Toast.makeText(getApplicationContext(),"Listo para interactuar",Toast.LENGTH_SHORT).show();
+                    Log.i("SDK_WALLET","Entró al " + BLEService.ACTION_GATT_SERVICES_DISCOVERED);
+
                     break;
             }
         }
@@ -149,6 +164,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.i("SDK_WALLET","onDestroy Servicio desconectado");
         unbindService(serviceConnection);
         if(miPot != null)
             miPot.disconnectMiPOT();
@@ -175,17 +191,40 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
             case R.id.buttonConnect:
                 Toast.makeText(getApplicationContext(),"Connect",Toast.LENGTH_SHORT).show();
 
-                if(miPot.miPotInitializeConnection()){
+                boolean flag = miPot.miPotInitializeConnection();
+
+                Log.i("SDK_WALLET","Esta es la bandera de Initialize " + String.valueOf(flag));
+
+                if(flag){
                     Toast.makeText(getApplicationContext(),"Servicio conectado",Toast.LENGTH_SHORT).show();
-                    miPot.miPotConnect(barcode);
+                    boolean flag1  = miPot.miPotConnect(barcode);
+                    // E/BluetoothGatt: android.os.DeadObjectException
+                    if(flag1){
+                        Toast.makeText(getApplicationContext(),"miPotConnect TRUE",Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(getApplicationContext(),"miPotConnect FALSE",Toast.LENGTH_SHORT).show();
+                    }
+                }else{
+                    Log.i("SDK_WALLET","Esta es la bandera de Initial");
                 }
                 break;
             case R.id.buttonVerifyMiPOT:
                 Toast.makeText(getApplicationContext(),"Verify MiPOT",Toast.LENGTH_SHORT).show();
                 // Comprobar BLE
-                if(!miPot.miPotGetAuthData()){
-                    Toast.makeText(getApplicationContext(),"No fue posible escribir",Toast.LENGTH_SHORT).show();
-                }
+
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        boolean flag1 = miPot.miPotGetAuthData();
+
+                        if(flag1){
+                            Log.i("SDK_WALLET","miPotGetAuthData positivo");
+                        }else{
+                            Toast.makeText(getApplicationContext(),"No fue posible escribir",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, 300);
+
+
                 break;
             case R.id.buttonVerifyResponseMiPOT:
                 Toast.makeText(getApplicationContext(),"Response MiPOT",Toast.LENGTH_SHORT).show();
@@ -196,10 +235,17 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
 
                 break;
             case R.id.buttonSendAmount:
-                Toast.makeText(getApplicationContext(),"Send Data to MiPOT",Toast.LENGTH_SHORT).show();
+
+               Toast.makeText(getApplicationContext(),"Send Data to MiPOT",Toast.LENGTH_SHORT).show();
                 if(!miPot.miPotSendData(true,"100000.99")){
                     Toast.makeText(getApplicationContext(),"No fue posible escribir 3",Toast.LENGTH_SHORT).show();
                 }
+
+                //Toast.makeText(getApplicationContext(),"Disconnect",Toast.LENGTH_SHORT).show();
+                //miPot.disconnectMiPOT();
+
+
+
                 break;
             case R.id.buttonAPI:
                 RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
@@ -241,18 +287,7 @@ public class BLEActivity extends AppCompatActivity implements View.OnClickListen
                         }
 
                     }
-                }){
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> headers = new HashMap<>();
-                        String credentials = ":" ;
-                        String auth = "Basic "
-                                + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                        headers.put("Content-Type", "application/json");
-                        headers.put("Authorization", auth);
-                        return headers;
-                    }
-                };
+                });
 
                 queue.add(request);
                 break;

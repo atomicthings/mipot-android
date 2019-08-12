@@ -1,38 +1,15 @@
-# SDK para MiPOT (Actualización 06/05/19)
-# Versión actual: 0.3
+# SDK para MiPOT (Actualización 12/08/19)
+# Versión actual: 0.5
 
 Este es el repositorio oficial para las versiones de SDK del dispositivo MiPOT
 
 
-## MiPOT ya cuenta con Basic Auth
-
-ENDPOINT: Solicitar por correo a ricardo@atomicthings.com
-
-Agregar header "Authentication" en la petición
-y como valor el base64 de "Basic packageName:KEY"
-
-Donde:
-* packageName es el nombre del paquete de la aplicación
-* KEY es una cadena suministrada por Atomic Things
-
-
-
 ![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta")
 ## Actualiaciones !!!
-
-
-
-Desde la primera versión de SDK (0.1) solo se ha realizado una actualización que
- corresponde a la 0.3.
-Estos son los puntos correspondientes:
-
-* Se renombraron variables para facilitar su uso  **Requiere cambios**
-* Se solucionó el problema de las variables cruzadas en la versión 0.1  **Requiere cambios**
-* El objeto obtenido en el QR pasó a tipo String (antes barcode) **Requiere cambios**
-* Mejoras en seguridad **Requiere cambios**
-
-
-Estos cambios aplican para la versión del firmware de MiPOT (v0.96L)
+* Ya es posible obtener la sucursal asociada al MiPOT
+Estos cambios aplican para la versión del firmware de MiPOT (v0.981L)
+Y la versión 0.5 de SDK
+* Mantenimiento del código (Sin efectos en funcionalidad)
 
 ### Guía de inicio
 
@@ -103,10 +80,6 @@ El SDK se hace cargo de los permisos de cámara.
 El código anterior abrirá la cámara y buscará un QR de MiPOT.
 
 
-![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión  1/4 (Parte 1)**
-* El objeto obtenido en el QR pasó a tipo String (antes barcode)
-
-
 La respuesta se obtiene en onActivityResult
 ```
 if(requestCode == ESCANER_REQUEST_MIPOT && data != null){
@@ -151,10 +124,6 @@ ServiceConnection serviceConnection = new ServiceConnection() {
 };
 ```
 
-![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 2/4**
-* Se renombraron variables para facilitar su uso
-* Se solucionó el problema de las variables cruzadas en la versión 0.1  
-
 BroadcastReceiver
 Es una instancia importante que consiste en el manejo de los mensajes de MiPOT.
 Aquí se encontraran los mensajes que envíe MiPOT a la aplicación dependiendo
@@ -191,11 +160,6 @@ BroadcastReceiver receiver = new BroadcastReceiver() {
   }
 };
 ```
-
-![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 3/4**
-* Se renombraron variables para facilitar su uso
-* Se solucionó el problema de las variables cruzadas en la versión 0.1  
-
 
 **Ciclo de vida de la actividad y el servicio**
 El siguiente bloque de código sirve para establecer la comunicación
@@ -297,8 +261,9 @@ de AtomicThings para verificar MiPOT
 
 
 
-![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") **Cambio en la nueva versión 4/4**
-*  Mejoras en seguridad
+#Authentication
+ENDPOINT: Solicitar por correo a ricardo@atomicthings.com
+Las instrucciones se enviarán por correo.
 
 
 **Paso 8: El resultado de la petición POST**
@@ -328,6 +293,17 @@ Se manda un código de error a
 case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
 ```
 para conocer el estado del sistema.
+
+![alt text](https://img.icons8.com/color/48/000000/error.png "Alerta") Obtener sucursal
+
+En este paso es posible obtener la sucursal.
+```
+HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(BLEService.EXTRA_DATA);
+...
+case BLEService.ACTION_WALLET_DEVICE_VERIFICATION:
+  map.get("branch")
+break;
+```
 
 
 **Paso 11 y 12**
